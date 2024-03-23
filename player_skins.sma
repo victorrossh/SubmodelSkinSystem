@@ -5,6 +5,9 @@
 
 new g_szKnife[MAX_PLAYERS][64];
 new g_szButcher[MAX_PLAYERS][64];
+new g_szBayonet[MAX_PLAYERS][64];
+new g_szDagger[MAX_PLAYERS][64];
+new g_szKatana[MAX_PLAYERS][64];
 new g_szUsp[MAX_PLAYERS][64];
 new g_szSkin[MAX_PLAYERS][64];
 
@@ -25,8 +28,11 @@ public plugin_natives()
 {
 	register_native("set_user_knife", "set_user_knife_native");
 	register_native("set_user_butcher", "set_user_butcher_native");
+	register_native("set_user_bayonet", "set_user_bayonet_native");
+	register_native("set_user_dagger", "set_user_dagger_native");
+	register_native("set_user_katana", "set_user_katana_native");
 	register_native("set_user_usp", "set_user_usp_native");
-	register_native("set_user_skin", "set_user_skin_native");
+	register_native("set_user_player_skin", "set_user_player_skin_native");
 
 	register_native("toggle_user_knife", "toggle_user_knife_native");
 	register_native("toggle_user_usp", "toggle_user_usp_native");
@@ -53,6 +59,36 @@ public set_user_butcher_native(numParams)
 	SaveSkins(id);
 }
 
+public set_user_bayonet_native(numParams)
+{
+	new id = get_param(1);
+	new skin[64];
+	get_string(2, skin, charsmax(skin));
+
+	format(g_szBayonet[id], charsmax(g_szBayonet[]), skin);
+	SaveSkins(id);
+}
+
+public set_user_dagger_native(numParams)
+{
+	new id = get_param(1);
+	new skin[64];
+	get_string(2, skin, charsmax(skin));
+
+	format(g_szDagger[id], charsmax(g_szDagger[]), skin);
+	SaveSkins(id);
+}
+
+public set_user_katana_native(numParams)
+{
+	new id = get_param(1);
+	new skin[64];
+	get_string(2, skin, charsmax(skin));
+
+	format(g_szKatana[id], charsmax(g_szKatana[]), skin);
+	SaveSkins(id);
+}
+
 public set_user_usp_native(numParams)
 {
 	new id = get_param(1);
@@ -63,7 +99,7 @@ public set_user_usp_native(numParams)
 	SaveSkins(id);
 }
 
-public set_user_skin_native(numParams)
+public set_user_player_skin_native(numParams)
 {
 	new id = get_param(1);
 	new skin[64];
@@ -112,6 +148,12 @@ public Changeweapon_Hook(id){
 		set_pev(id,pev_viewmodel2, g_szKnife[id]);
 	if(equali(model,"models/fwo/v_butcher.mdl") && strlen(g_szButcher[id]))
 		set_pev(id,pev_viewmodel2, g_szButcher[id]);
+	if(equali(model,"models/llg/v_vip_tigertooth.mdl") && strlen(g_szBayonet[id]))
+		set_pev(id,pev_viewmodel2, g_szBayonet[id]);
+	if(equali(model,"models/llg/v_premium.mdl") && strlen(g_szDagger[id]))
+		set_pev(id,pev_viewmodel2, g_szDagger[id]);
+	if(equali(model,"models/llg/v_katana.mdl") && strlen(g_szKatana[id]))
+		set_pev(id,pev_viewmodel2, g_szKatana[id]);
 	
 	return PLUGIN_HANDLED;
 }
