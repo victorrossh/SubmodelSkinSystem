@@ -144,9 +144,9 @@ public Changeweapon_Hook(id){
 
 	if(wpn_id == CSW_USP && strlen(g_szUsp[id]))
 		set_pev(id,pev_viewmodel2, g_szUsp[id]);
-	if(equali(model,"models/fwo/v_knife.mdl") && strlen(g_szKnife[id]))
+	if(equali(model,"models/llg/v_knife.mdl") && strlen(g_szKnife[id]))
 		set_pev(id,pev_viewmodel2, g_szKnife[id]);
-	if(equali(model,"models/fwo/v_butcher.mdl") && strlen(g_szButcher[id]))
+	if(equali(model,"models/llg/v_butcher.mdl") && strlen(g_szButcher[id]))
 		set_pev(id,pev_viewmodel2, g_szButcher[id]);
 	if(equali(model,"models/llg/v_vip_tigertooth.mdl") && strlen(g_szBayonet[id]))
 		set_pev(id,pev_viewmodel2, g_szBayonet[id]);
