@@ -179,7 +179,9 @@ public SaveSkins(id){
 	new key2[30];
 	new key3[30];
 	new key4[30];
-
+	new key5[30];
+	new key6[30];
+	new key7[30];
 
 	get_user_name( id , name , charsmax( name ) );
 
@@ -187,11 +189,17 @@ public SaveSkins(id){
 	formatex(key2, charsmax(key2), "%s+1", name);
 	formatex(key3, charsmax(key2), "%s+2", name);
 	formatex(key4, charsmax(key2), "%s+3", name);
+	formatex(key5, charsmax(key2), "%s+4", name);
+	formatex(key6, charsmax(key2), "%s+5", name);
+	formatex(key7, charsmax(key2), "%s+6", name);
 	
 	nvault_set( g_iVault , key1 , g_szKnife[id]);
 	nvault_set( g_iVault , key2 , g_szButcher[id]);
 	nvault_set( g_iVault , key3 , g_szUsp[id]);
 	nvault_set( g_iVault , key4 , g_szSkin[id]);
+	nvault_set( g_iVault , key5 , g_szBayonet[id]);
+	nvault_set( g_iVault , key6 , g_szDagger[id]);
+	nvault_set( g_iVault , key7 , g_szKatana[id]);
 }
 //loads the skins
 public LoadSkins(id){
@@ -201,6 +209,9 @@ public LoadSkins(id){
 	new key2[30];
 	new key3[30];
 	new key4[30];
+	new key5[30];
+	new key6[30];
+	new key7[30];
 
 	get_user_name( id , name , charsmax( name ) );
 
@@ -208,10 +219,16 @@ public LoadSkins(id){
 	formatex(key2, charsmax(key2), "%s+1", name);
 	formatex(key3, charsmax(key2), "%s+2", name);
 	formatex(key4, charsmax(key2), "%s+3", name);
+	formatex(key5, charsmax(key2), "%s+4", name);
+	formatex(key6, charsmax(key2), "%s+5", name);
+	formatex(key7, charsmax(key2), "%s+6", name);
 
 	nvault_get( g_iVault , key1 , g_szKnife[id] , 127 );  
 	nvault_get( g_iVault , key2 , g_szButcher[id] , 127 );
 	nvault_get( g_iVault , key3 , g_szUsp[id] , 127 );
 	nvault_get( g_iVault , key4 , g_szSkin[id] , 127 );
+	nvault_get( g_iVault , key5 , g_szBayonet[id] , 127 );
+	nvault_get( g_iVault , key6 , g_szDagger[id] , 127 );
+	nvault_get( g_iVault , key7 , g_szKatana[id] , 127 );
 
 }
