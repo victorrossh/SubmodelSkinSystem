@@ -175,60 +175,44 @@ public client_putinserver(id){
 
 public SaveSkins(id){
 	new name[30];
-	new key1[30];
-	new key2[30];
-	new key3[30];
-	new key4[30];
-	new key5[30];
-	new key6[30];
-	new key7[30];
+	new keys[7][30];
 
 	get_user_name( id , name , charsmax( name ) );
 
-	formatex(key1, charsmax(key1), "%s", name);
-	formatex(key2, charsmax(key2), "%s+1", name);
-	formatex(key3, charsmax(key2), "%s+2", name);
-	formatex(key4, charsmax(key2), "%s+3", name);
-	formatex(key5, charsmax(key2), "%s+4", name);
-	formatex(key6, charsmax(key2), "%s+5", name);
-	formatex(key7, charsmax(key2), "%s+6", name);
+	formatex(keys[0], charsmax(keys[]), "%s", name);
+
+	for (new i = 1; i < 7; i++) {
+		formatex(keys[i], charsmax(keys[]), "%s+%d", name, i);
+	}
 	
-	nvault_set( g_iVault , key1 , g_szKnife[id]);
-	nvault_set( g_iVault , key2 , g_szButcher[id]);
-	nvault_set( g_iVault , key3 , g_szUsp[id]);
-	nvault_set( g_iVault , key4 , g_szSkin[id]);
-	nvault_set( g_iVault , key5 , g_szBayonet[id]);
-	nvault_set( g_iVault , key6 , g_szDagger[id]);
-	nvault_set( g_iVault , key7 , g_szKatana[id]);
+	nvault_set( g_iVault , keys[0] , g_szKnife[id]);
+	nvault_set( g_iVault , keys[1] , g_szButcher[id]);
+	nvault_set( g_iVault , keys[2] , g_szUsp[id]);
+	nvault_set( g_iVault , keys[3] , g_szSkin[id]);
+	nvault_set( g_iVault , keys[4] , g_szBayonet[id]);
+	nvault_set( g_iVault , keys[5] , g_szDagger[id]);
+	nvault_set( g_iVault , keys[6] , g_szKatana[id]);
 }
 //loads the skins
 public LoadSkins(id){
 
 	new name[30];
-	new key1[30];
-	new key2[30];
-	new key3[30];
-	new key4[30];
-	new key5[30];
-	new key6[30];
-	new key7[30];
+	new keys[7][30];
 
 	get_user_name( id , name , charsmax( name ) );
 
-	formatex(key1, charsmax(key1), "%s", name);
-	formatex(key2, charsmax(key2), "%s+1", name);
-	formatex(key3, charsmax(key2), "%s+2", name);
-	formatex(key4, charsmax(key2), "%s+3", name);
-	formatex(key5, charsmax(key2), "%s+4", name);
-	formatex(key6, charsmax(key2), "%s+5", name);
-	formatex(key7, charsmax(key2), "%s+6", name);
+	formatex(keys[0], charsmax(keys[]), "%s", name);
 
-	nvault_get( g_iVault , key1 , g_szKnife[id] , 127 );  
-	nvault_get( g_iVault , key2 , g_szButcher[id] , 127 );
-	nvault_get( g_iVault , key3 , g_szUsp[id] , 127 );
-	nvault_get( g_iVault , key4 , g_szSkin[id] , 127 );
-	nvault_get( g_iVault , key5 , g_szBayonet[id] , 127 );
-	nvault_get( g_iVault , key6 , g_szDagger[id] , 127 );
-	nvault_get( g_iVault , key7 , g_szKatana[id] , 127 );
+	for (new i = 1; i < 7; i++) {
+    	formatex(keys[i], charsmax(keys[]), "%s+%d", name, i);
+	}
+
+	nvault_get( g_iVault , keys[0] , g_szKnife[id] , 127 );  
+	nvault_get( g_iVault , keys[1] , g_szButcher[id] , 127 );
+	nvault_get( g_iVault , keys[2] , g_szUsp[id] , 127 );
+	nvault_get( g_iVault , keys[3] , g_szSkin[id] , 127 );
+	nvault_get( g_iVault , keys[4] , g_szBayonet[id] , 127 );
+	nvault_get( g_iVault , keys[5] , g_szDagger[id] , 127 );
+	nvault_get( g_iVault , keys[6] , g_szKatana[id] , 127 );
 
 }
