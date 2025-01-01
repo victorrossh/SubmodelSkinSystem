@@ -16,6 +16,7 @@ const m_pPlayer = 41 // CBasePlayer *
 
 native cs_set_viewmodel_body(iPlayer, iValue);
 native cs_get_viewmodel_body(iPlayer);
+forward change_skin(iPlayer, iEnt);
 
 new g_iKnifeID[MAX_PLAYERS];
 
@@ -32,16 +33,17 @@ new bool:g_bHideUsp[MAX_PLAYERS];
 
 new g_iVault;
 
-new g_szKnifeModel[][] = { "models/llg/v_def.mdl", "models/llg/v_butcher.mdl", "models/llg/v_vip.mdl", "models/llg/v_premium.mdl" };
-new g_szUspModel[] = "models/llg/v_usp.mdl";
+new g_szKnifeModel[][] = { "models/llg3/v_def.mdl", "models/llg3/v_butcher.mdl", "models/llg3/v_vip.mdl", "models/llg3/v_premium.mdl" };
+new g_szUspModel[] = "models/llg3/v_usp.mdl";
 
 public plugin_init()
 {
-	RegisterHam(Ham_Item_Deploy, "weapon_knife", "ItemDeployPost", 1)
-	RegisterHam(Ham_Item_Deploy, "weapon_usp", "ItemDeployPost", 1)
+	//RegisterHam(Ham_Item_Deploy, "weapon_knife", "ItemDeployPost", 1);
+	//RegisterHam(Ham_Item_Deploy, "weapon_usp", "ItemDeployPost", 1);
+
 	register_event("ResetHUD", "ResetModel_Hook", "b");
 
-	g_iVault = nvault_open("player_skins3");
+	g_iVault = nvault_open("player_skins4");
 }
 
 public plugin_precache()
@@ -161,6 +163,39 @@ public toggle_user_usp_native(numParams)
 	g_bHideUsp[id] = !g_bHideUsp[id];
 }
 
+public change_skin(iPlayer, iEnt)
+{
+	new iWpn = WEAPON_ENT(iEnt);
+
+	if(iWpn == CSW_USP && g_bHideUsp[iPlayer]) return HAM_IGNORED;
+
+	if(iWpn == CSW_KNIFE && g_bHideKnife[iPlayer]) return HAM_IGNORED;
+
+	if(iWpn == CSW_USP)
+	{
+		cs_set_viewmodel_body(iPlayer, g_iUsp[iPlayer]);
+		SetSkinUSP(iPlayer);
+
+		return HAM_IGNORED;
+	}
+
+	if(g_iKnifeID[iPlayer] == 0)
+		cs_set_viewmodel_body(iPlayer, g_iKnife[iPlayer]);
+	if(g_iKnifeID[iPlayer] == 1)
+		cs_set_viewmodel_body(iPlayer, g_iButcher[iPlayer]);
+	if(g_iKnifeID[iPlayer] == 2)
+		cs_set_viewmodel_body(iPlayer, g_iBayonet[iPlayer]);
+	if(g_iKnifeID[iPlayer] == 3)
+		cs_set_viewmodel_body(iPlayer, g_iDagger[iPlayer]);
+	if(g_iKnifeID[iPlayer] == 4)
+		cs_set_viewmodel_body(iPlayer, g_iKatana[iPlayer]);
+
+	SetSkinKnife(iPlayer);
+
+	return HAM_IGNORED;
+}
+
+/*
 public ItemDeployPost(iWeapon)
 {	
 	static id;
@@ -176,16 +211,15 @@ public ItemDeployPost(iWeapon)
 
 	if(iWpn == CSW_KNIFE && g_bHideKnife[id]) return HAM_IGNORED;
 	
-	if(iWpn == CSW_USP && g_iUsp[id])
+	if(iWpn == CSW_USP)
 	{
 		cs_set_viewmodel_body(id, g_iUsp[id]);
-		set_pev(id, pev_viewmodel2, "");
 
-		set_task(0.1, "SetSkinUSP", id);
+		set_task(0.01, "SetSkinUSP", id);
 
 		return HAM_IGNORED;
 	}
-		
+
 	if(g_iKnifeID[id] == 0)
 		cs_set_viewmodel_body(id, g_iKnife[id]);
 	if(g_iKnifeID[id] == 1)
@@ -197,21 +231,21 @@ public ItemDeployPost(iWeapon)
 	if(g_iKnifeID[id] == 4)
 		cs_set_viewmodel_body(id, g_iKatana[id]);
 
-	set_pev(id, pev_viewmodel2, "");
-
-	set_task(0.1, "SetSkinKnife", id);
+	set_task(0.01, "SetSkinKnife", id);
 
 	return HAM_IGNORED;
 }
-
+*/
 public SetSkinUSP(id)
 {
 	new wpn = get_user_weapon(id);
 	if(wpn != CSW_USP)
 		return;
 
+	//server_print("Set model: %s", g_szUspModel);
 	set_pev(id, pev_viewmodel2, g_szUspModel);
-	server_print("Set model: %s", g_szUspModel);
+	set_pev(id, pev_body, g_iUsp[id]);
+	
 }
 
 public SetSkinKnife(id)
@@ -224,7 +258,18 @@ public SetSkinKnife(id)
 		return;
 
 	set_pev(id, pev_viewmodel2, g_szKnifeModel[g_iKnifeID[id]]);
-	server_print("Set model: %s", g_szKnifeModel[g_iKnifeID[id]]);
+	if(g_iKnifeID[id] == 0)
+		set_pev(id, pev_body, g_iKnife[id]);
+	if(g_iKnifeID[id] == 1)
+		set_pev(id, pev_body, g_iButcher[id]);
+	if(g_iKnifeID[id] == 2)
+		set_pev(id, pev_body, g_iBayonet[id]);
+	if(g_iKnifeID[id] == 3)
+		set_pev(id, pev_body, g_iDagger[id]);
+	if(g_iKnifeID[id] == 4)
+		set_pev(id, pev_body, g_iKatana[id]);
+
+	//server_print("Set model: %s", g_szKnifeModel[g_iKnifeID[id]]);
 }
 
 public ResetModel_Hook(id, level, cid){

@@ -1,10 +1,13 @@
 #include <amxmodx>
 #include <fakemeta>
+#include <fakemeta_util>
 #include <hamsandwich>
 
 #define PLUGIN	"SetViewEntityBody"
 #define VERSION	"2"
 #define AUTHOR	"Hanna"	//Builds by Hanna https://forums.alliedmods.net/showthread.php?t=287754, profile https://forums.alliedmods.net/member.php?u=273346
+
+#define TASK_ID 48318
 
 //Natives
 native cs_set_viewmodel_body(iPlayer, iValue);
@@ -148,7 +151,8 @@ new WeaponNames[][] = { "weapon_knife", "weapon_glock18", "weapon_ak47", "weapon
 
 // We use this only for knife and usp
 new WeaponNames[][] = { "weapon_knife", "weapon_usp" }
-new WeaponIDs[] = { CSW_KNIFE, CSW_USP }
+
+new g_fwChangeSkin;
 
 //World decals
 new TraceBullets[][] = { "func_breakable", "func_wall", "func_door", "func_plat", "func_rotating", "worldspawn", "func_door_rotating" }
@@ -174,37 +178,63 @@ public plugin_init()
 	register_forward(FM_UpdateClientData, "FM_Hook_UpdateClientData_Post", TRUE);
 	register_forward(FM_PlaybackEvent, "Forward_PlaybackEvent");
 	register_forward(FM_ClientUserInfoChanged, "Forward_ClientUserInfoChanged");
+
+	new ent = fm_create_entity("info_target");
+
+	set_pev(ent, pev_classname, "weapondeploy_think");
+	set_pev(ent, pev_nextthink, get_gametime() + 1.0);
+	RegisterHam(Ham_Think, "info_target", "weapondeploy_think", 1);
 	
 	get_modname(g_szModName, charsmax(g_szModName))
 	// Gun Shot decals
 	if (equali(g_szModName,"cstrike"))
 	{	
-		g_iGunShotDecalNums = {41, 42, 43, 44, 45}
+		g_iGunShotDecalNums = {38, 39, 40, 41, 42}
 	}
 	else if (equali(g_szModName,"czero"))
 	{
 		g_iGunShotDecalNums = {53, 54, 55, 56, 57}
 	}
+
+	g_fwChangeSkin = CreateMultiForward("change_skin", ET_IGNORE, FP_CELL, FP_CELL);
 }
+
+new g_iDeployWeaponSwitch[MAX_PLAYERS] = {0};
 
 public HamF_Item_Deploy_Post(iEnt)
 {
 	static iPlayer;	
 	iPlayer = get_pdata_cbase(iEnt, m_pPlayer, XO_WEAPON);
-	static isValid;
-	isValid = false;
-	for(new i=0;i < sizeof WeaponIDs;i++)
-	{
-		if(WEAPON_ENT(iEnt) == WeaponIDs[i])
-			isValid = true;
-	}
-
-	if(!isValid)
-		return;
 		
-	set_pev(iPlayer, pev_viewmodel2, "");	//Because we unprecached our default viewmodels or we don't want to show the original bodyid	
-	set_task(0.1, "DeployWeaponSwitch", iPlayer);	//Set with a bit delay to prevent bug, m_flLastEventCheck need delay too
+	set_pev(iPlayer, pev_viewmodel2, "");	//Because we unprecached our default viewmodels or we don't want to show the original bodyid
+
+	g_iDeployWeaponSwitch[iPlayer] = 1;
+	//if(task_exists(iPlayer + TASK_ID)) remove_task(iPlayer + TASK_ID);
+	//set_task(0.1, "DeployWeaponSwitch", iPlayer + TASK_ID);	//Set with a bit delay to prevent bug, m_flLastEventCheck need delay too
 }
+
+public weapondeploy_think(ent)
+{	
+	static classname[64];
+	static i;
+	pev(ent, pev_classname, classname, 63);
+	// Really hacky way, but it works...
+	if(equal(classname, "weapondeploy_think")){
+		for(i = 0;i<MAX_PLAYERS;i++){
+			if(g_iDeployWeaponSwitch[i] == 1){
+				g_iDeployWeaponSwitch[i] = 2;
+			}
+			else if(g_iDeployWeaponSwitch[i] == 2){
+				DeployWeaponSwitch(i);
+				g_iDeployWeaponSwitch[i] = 0;
+			}
+			
+		}
+
+		set_pev(ent, pev_nextthink, get_gametime() + 0.02);
+	}
+}
+
 
 public HamF_CS_Weapon_SendWeaponAnim_Post(iEnt, iAnim, Skiplocal)
 {
@@ -239,7 +269,7 @@ public HamF_TraceAttack_Post(iEnt, iAttacker, Float:damage, Float:fDir[3], ptr/*
 			
 		default:
 		{
-			get_tr2(ptr, TR_vecEndPos, vecEnd);	
+			get_tr2(ptr, TR_vecEndPos, vecEnd);
 	
 			// Decal effects, add here spark, any
 			engfunc(EngFunc_MessageBegin, MSG_PAS, SVC_TEMPENTITY, vecEnd, 0);
@@ -280,11 +310,16 @@ public FM_Hook_UpdateClientData_Post(iPlayer, SendWeapons, CD_Handle)
 	
 	if(!pev_valid(iTarget))
 		return FMRES_IGNORED
-	
+
 	iActiveItem = get_pdata_cbase(iTarget, m_pActiveItem, XO_PLAYER);
+
+	if(!pev_valid(iActiveItem))
+		return FMRES_IGNORED
+
 
 	validWeapon = false;
 	WEAPON_STRING(iActiveItem, iWeaponName);
+
 	for (new i; i < sizeof WeaponNames; i++)
 	{
 		if(equali(iWeaponName, WeaponNames[i]))
@@ -338,6 +373,7 @@ public FM_Hook_UpdateClientData_Post(iPlayer, SendWeapons, CD_Handle)
 		SendWeaponAnim(iTarget, GetWeaponDrawAnim(iActiveItem), iBodyIndex[iTarget]);	//Custom weapon draw anim should go there too	
 		set_pdata_float(iActiveItem, m_flLastEventCheck, 0.0, XO_WEAPON);
 	}
+
 	return FMRES_IGNORED;
 }
 	
@@ -594,7 +630,7 @@ PlayWeaponState(iPlayer, const szShootSound[], iWeaponAnim)
 SendWeaponAnim(iPlayer, iAnim, iBody)
 {
 	static i, iCount, iSpectator, iszSpectators[32];
-
+	
 	set_pev(iPlayer, pev_weaponanim, iAnim);
 
 	message_begin(MSG_ONE, SVC_WEAPONANIM, _, iPlayer);
@@ -656,16 +692,16 @@ EjectBrass(iPlayer, iEnt)
 	/***************************************************************************/
 	/***************************************************************************/
 
-	
 public DeployWeaponSwitch(iPlayer)
 {
-	static iEnt, iWeaponName[24];		
+	static iEnt;		
 	iEnt = get_pdata_cbase(iPlayer, m_pActiveItem, XO_PLAYER);
 	
 	if(!iEnt || iEnt == FM_NULLENT || !pev_valid(iEnt))
-		return;	
-	
-	WEAPON_STRING(iEnt, iWeaponName);	
+		return;
+
+	new iRet;
+	ExecuteForward(g_fwChangeSkin, iRet, iPlayer, iEnt);
 
 	set_pdata_float(iEnt, m_flLastEventCheck, get_gametime() + 0.001, XO_WEAPON);	//0.001 is good enough
 	SendWeaponAnim(iPlayer, IDLE_ANIM, iBodyIndex[iPlayer]);	//Slow message	
