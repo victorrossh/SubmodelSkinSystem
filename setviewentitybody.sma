@@ -231,7 +231,7 @@ public weapondeploy_think(ent)
 			
 		}
 
-		set_pev(ent, pev_nextthink, get_gametime() + 0.02);
+		set_pev(ent, pev_nextthink, get_gametime() + 0.01);
 	}
 }
 

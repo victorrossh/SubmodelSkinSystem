@@ -286,6 +286,8 @@ public client_putinserver(id){
 	g_bHideKnife[id] = false;
 	g_bHideUsp[id] = false;
 	g_iKnifeID[id] = 0;
+	
+	cs_set_user_model(id, g_szSkin[id]);
 
 }
 
