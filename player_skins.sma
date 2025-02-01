@@ -193,9 +193,17 @@ public HamF_Item_Deploy_Post(iEnt)
 
 	new iWpn = WEAPON_ENT(iEnt);
 	
-	if(iWpn == CSW_USP && g_bHideUsp[iPlayer]) return HAM_IGNORED;
+	if(iWpn == CSW_USP && g_bHideUsp[iPlayer])
+	{
+		set_pev(iPlayer, pev_viewmodel2, "");
+		return HAM_IGNORED;
+	}
 
-	if(iWpn == CSW_KNIFE && g_bHideKnife[iPlayer]) return HAM_IGNORED;
+	if(iWpn == CSW_KNIFE && g_bHideKnife[iPlayer]) 
+	{
+		set_pev(iPlayer, pev_viewmodel2, "");
+		return HAM_IGNORED;
+	}
 
 	if(iWpn == CSW_USP)
 	{
