@@ -1,5 +1,12 @@
 native set_user_knife_id(id, knifeId);
 
+native set_default_knife(model[]);
+native set_default_butcher(model[]);
+native set_default_bayonet(model[]);
+native set_default_katana(model[]);
+native set_default_dagger(model[]);
+native set_default_usp(model[]);
+
 native set_user_knife(id, model[]);
 native set_user_butcher(id, model[]);
 native set_user_bayonet(id, model[]);

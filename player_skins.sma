@@ -16,7 +16,23 @@ const XO_PLAYER = 5
 const m_pPlayer = 41 // CBasePlayer *
 const m_pActiveItem = 373 // CBasePlayerItem *
 
+enum enumKnife
+{
+	eKnife = 0,
+	eButcher,
+	eBayonet,
+	eDagger,
+	eKatana
+};
+
 new g_iKnifeID[MAX_PLAYERS];
+
+new g_szDefaultKnife[128];
+new g_szDefaultButcher[128];
+new g_szDefaultBayonet[128];
+new g_szDefaultDagger[128];
+new g_szDefaultKatana[128];
+new g_szDefaultUsp[128];
 
 new g_szKnife[MAX_PLAYERS][128];
 new g_szButcher[MAX_PLAYERS][128];
@@ -33,18 +49,27 @@ new g_iVault;
 
 public plugin_init()
 {
-	//RegisterHam(Ham_Item_Deploy, "weapon_knife", "ItemDeployPost", 1);
-	//RegisterHam(Ham_Item_Deploy, "weapon_usp", "ItemDeployPost", 1);
-
 	register_event("ResetHUD", "ResetModel_Hook", "b");
 
-	g_iVault = nvault_open("player_skins4");
-}
+	RegisterHam(Ham_Item_Deploy, "weapon_knife", "HamF_Item_Deploy_Post", 1);
+	RegisterHam(Ham_Item_Deploy, "weapon_usp", "HamF_Item_Deploy_Post", 1);
 
+	g_iVault = nvault_open("player_skins");
+
+	formatex(g_szDefaultKnife, charsmax(g_szDefaultKnife), "models/v_knife.mdl");
+	formatex(g_szDefaultUsp, charsmax(g_szDefaultUsp), "models/v_usp.mdl");
+}
 
 public plugin_natives()
 {
 	register_native("set_user_knife_id", "set_user_knife_id_native");
+
+	register_native("set_default_knife", 	"set_default_knife_native");
+	register_native("set_default_butcher", 	"set_default_butcher_native");
+	register_native("set_default_bayonet", 	"set_default_bayonet_native");
+	register_native("set_default_dagger", 	"set_default_dagger_native");
+	register_native("set_default_katana", 	"set_default_katana_native");
+	register_native("set_default_usp", 		"set_default_usp_native");
 
 	register_native("set_user_knife", "set_user_knife_native");
 	register_native("set_user_butcher", "set_user_butcher_native");
@@ -64,6 +89,36 @@ public set_user_knife_id_native(numParams)
 	new knifeId = get_param(2);
 
 	g_iKnifeID[id] = knifeId;
+}
+
+public set_default_knife_native(numParams)
+{
+	get_string(1, g_szDefaultKnife, charsmax(g_szDefaultKnife));
+}
+
+public set_default_butcher_native(numParams)
+{
+	get_string(1, g_szDefaultButcher, charsmax(g_szDefaultButcher));
+}
+
+public set_default_bayonet_native(numParams)
+{
+	get_string(1, g_szDefaultBayonet, charsmax(g_szDefaultBayonet));
+}
+
+public set_default_dagger_native(numParams)
+{
+	get_string(1, g_szDefaultDagger, charsmax(g_szDefaultDagger));
+}
+
+public set_default_katana_native(numParams)
+{
+	get_string(1, g_szDefaultKatana, charsmax(g_szDefaultKatana));
+}
+
+public set_default_usp_native(numParams)
+{
+	get_string(1, g_szDefaultUsp, charsmax(g_szDefaultUsp));
 }
 
 public set_user_knife_native(numParams)
@@ -131,11 +186,11 @@ public toggle_user_usp_native(numParams)
 	g_bHideUsp[id] = !g_bHideUsp[id];
 }
 
-
-public DeployWeaponSwitch(iPlayer)
+public HamF_Item_Deploy_Post(iEnt)
 {
-	static iEnt;		
-	iEnt = get_pdata_cbase(iPlayer, m_pActiveItem, XO_PLAYER);
+	static iPlayer;	
+	iPlayer = get_pdata_cbase(iEnt, m_pPlayer, XO_WEAPON);
+
 	new iWpn = WEAPON_ENT(iEnt);
 	
 	if(iWpn == CSW_USP && g_bHideUsp[iPlayer]) return HAM_IGNORED;
@@ -144,23 +199,33 @@ public DeployWeaponSwitch(iPlayer)
 
 	if(iWpn == CSW_USP)
 	{
-		set_pev(iPlayer, pev_viewmodel2, g_szUsp[iPlayer]);
+		if(strlen(g_szUsp[iPlayer]))
+			set_pev(iPlayer, pev_viewmodel2, g_szUsp[iPlayer]);
+		else
+			set_pev(iPlayer, pev_viewmodel2, g_szDefaultUsp);
 
 		return HAM_IGNORED;
 	}
 
 	if(iWpn != CSW_KNIFE) return HAM_IGNORED;
+	
+	static model[128];
 
-	if(g_iKnifeID[iPlayer] == 0)
-		set_pev(iPlayer, pev_viewmodel2, g_szKnife[iPlayer]);
-	if(g_iKnifeID[iPlayer] == 1)
-		set_pev(iPlayer, pev_viewmodel2, g_szButcher[iPlayer]);
-	if(g_iKnifeID[iPlayer] == 2)
-		set_pev(iPlayer, pev_viewmodel2, g_szBayonet[iPlayer]);
-	if(g_iKnifeID[iPlayer] == 3)
-		set_pev(iPlayer, pev_viewmodel2, g_szDagger[iPlayer]);
-	if(g_iKnifeID[iPlayer] == 4)
-		set_pev(iPlayer, pev_viewmodel2, g_szKatana[iPlayer]);
+	switch(g_iKnifeID[iPlayer])
+	{
+		case eKnife:
+			formatex(model, charsmax(model), strlen(g_szKnife[iPlayer])?g_szKnife[iPlayer]:g_szDefaultKnife);
+		case eButcher:
+			formatex(model, charsmax(model), strlen(g_szButcher[iPlayer])?g_szButcher[iPlayer]:g_szDefaultButcher);
+		case eBayonet:
+			formatex(model, charsmax(model), strlen(g_szBayonet[iPlayer])?g_szBayonet[iPlayer]:g_szDefaultBayonet);
+		case eDagger:
+			formatex(model, charsmax(model), strlen(g_szDagger[iPlayer])?g_szDagger[iPlayer]:g_szDefaultDagger);
+		case eKatana:
+			formatex(model, charsmax(model), strlen(g_szKatana[iPlayer])?g_szKatana[iPlayer]:g_szDefaultKatana);
+	}
+	
+	set_pev(iPlayer, pev_viewmodel2, model);
 
 	return HAM_IGNORED;
 }
