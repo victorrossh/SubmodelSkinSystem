@@ -18,23 +18,25 @@ native cs_set_viewmodel_body(iPlayer, iValue);
 native cs_get_viewmodel_body(iPlayer);
 forward change_skin(iPlayer, iEnt);
 
+enum eWeapon{
+	eModel[64],
+	eSubmodel
+}
+
 new g_iKnifeID[MAX_PLAYERS];
 
-new g_iKnife[MAX_PLAYERS];
-new g_iButcher[MAX_PLAYERS];
-new g_iBayonet[MAX_PLAYERS];
-new g_iDagger[MAX_PLAYERS];
-new g_iKatana[MAX_PLAYERS];
-new g_iUsp[MAX_PLAYERS];
+new g_iKnife[MAX_PLAYERS][eWeapon];
+new g_iButcher[MAX_PLAYERS][eWeapon];
+new g_iBayonet[MAX_PLAYERS][eWeapon];
+new g_iDagger[MAX_PLAYERS][eWeapon];
+new g_iKatana[MAX_PLAYERS][eWeapon];
+new g_iUsp[MAX_PLAYERS][eWeapon];
 new g_szSkin[MAX_PLAYERS][64];
 
 new bool:g_bHideKnife[MAX_PLAYERS];
 new bool:g_bHideUsp[MAX_PLAYERS];
 
 new g_iVault;
-
-new g_szKnifeModel[][] = { "models/llg3/v_def.mdl", "models/llg3/v_butcher.mdl", "models/llg3/v_vip.mdl", "models/llg3/v_premium.mdl" };
-new g_szUspModel[] = "models/llg3/v_usp.mdl";
 
 public plugin_init()
 {
@@ -43,18 +45,9 @@ public plugin_init()
 
 	register_event("ResetHUD", "ResetModel_Hook", "b");
 
-	g_iVault = nvault_open("player_skins4");
+	g_iVault = nvault_open("player_skins5");
 }
 
-public plugin_precache()
-{
-	for (new i; i < sizeof g_szKnifeModel; i++)
-	{
-		precache_model(g_szKnifeModel[i]);
-	}
-
-	precache_model(g_szUspModel);
-}
 
 public plugin_natives()
 {
@@ -83,71 +76,89 @@ public set_user_knife_id_native(numParams)
 public set_user_knife_native(numParams)
 {
 	new id = get_param(1);
-	new submodel = get_param(2);
+	new model[128];
+	get_string(2, model, charsmax(model));
+	new submodel = get_param(3);
 
-	g_iKnife[id] = submodel;
+	formatex(g_iKnife[id][eModel], charsmax(g_iKnife[][eModel]), "%s", model);
+	g_iKnife[id][eSubmodel] = submodel;
 
-	SaveSkins(id);
+	SaveSkins(id, "knife", model, submodel);
 }
 
 public set_user_butcher_native(numParams)
 {
 	new id = get_param(1);
-	new submodel = get_param(2);
+	new model[128];
+	get_string(2, model, charsmax(model));
+	new submodel = get_param(3);
 
-	g_iButcher[id] = submodel;
+	formatex(g_iButcher[id][eModel], charsmax(g_iButcher[][eModel]), "%s", model);
+	g_iButcher[id][eSubmodel] = submodel;
 
-	SaveSkins(id);
+	SaveSkins(id, "butcher", model, submodel);
 }
 
 public set_user_bayonet_native(numParams)
 {
 	new id = get_param(1);
-	new submodel = get_param(2);
+	new model[128];
+	get_string(2, model, charsmax(model));
+	new submodel = get_param(3);
 
-	g_iBayonet[id] = submodel;
+	formatex(g_iBayonet[id][eModel], charsmax(g_iBayonet[][eModel]), "%s", model);
+	g_iBayonet[id][eSubmodel] = submodel;
 
-	SaveSkins(id);
+	SaveSkins(id, "bayonet", model, submodel);
 }
 
 public set_user_dagger_native(numParams)
 {
 	new id = get_param(1);
-	new submodel = get_param(2);
+	new model[128];
+	get_string(2, model, charsmax(model));
+	new submodel = get_param(3);
 
-	g_iDagger[id] = submodel;
+	formatex(g_iDagger[id][eModel], charsmax(g_iDagger[][eModel]), "%s", model);
+	g_iDagger[id][eSubmodel] = submodel;
 
-	SaveSkins(id);
+	SaveSkins(id, "dagger", model, submodel);
 }
 
 public set_user_katana_native(numParams)
 {
 	new id = get_param(1);
-	new submodel = get_param(2);
+	new model[128];
+	get_string(2, model, charsmax(model));
+	new submodel = get_param(3);
 
-	g_iKatana[id] = submodel;
+	formatex(g_iKatana[id][eModel], charsmax(g_iKatana[][eModel]), "%s", model);
+	g_iKatana[id][eSubmodel] = submodel;
 
-	SaveSkins(id);
+	SaveSkins(id, "katana", model, submodel);
 }
 
 public set_user_usp_native(numParams)
 {
 	new id = get_param(1);
-	new submodel = get_param(2);
+	new model[128];
+	get_string(2, model, charsmax(model));
+	new submodel = get_param(3);
 
-	g_iUsp[id] = submodel;
+	formatex(g_iUsp[id][eModel], charsmax(g_iUsp[][eModel]), "%s", model);
+	g_iUsp[id][eSubmodel] = submodel;
 
-	SaveSkins(id);
+	SaveSkins(id, "usp", model, submodel);
 }
 
 public set_user_player_skin_native(numParams)
 {
 	new id = get_param(1);
-	new skin[64];
-	get_string(2, skin, charsmax(skin));
+	new model[64];
+	get_string(2, model, charsmax(model));
 
-	format(g_szSkin[id], charsmax(g_szSkin[]), skin);
-	SaveSkins(id);
+	format(g_szSkin[id], charsmax(g_szSkin[]), model);
+	SaveSkins(id, "player", model, -1);
 	cs_set_user_model(id, g_szSkin[id]);
 }
 
@@ -173,22 +184,11 @@ public change_skin(iPlayer, iEnt)
 
 	if(iWpn == CSW_USP)
 	{
-		cs_set_viewmodel_body(iPlayer, g_iUsp[iPlayer]);
+		
 		SetSkinUSP(iPlayer);
 
 		return HAM_IGNORED;
 	}
-
-	if(g_iKnifeID[iPlayer] == 0)
-		cs_set_viewmodel_body(iPlayer, g_iKnife[iPlayer]);
-	if(g_iKnifeID[iPlayer] == 1)
-		cs_set_viewmodel_body(iPlayer, g_iButcher[iPlayer]);
-	if(g_iKnifeID[iPlayer] == 2)
-		cs_set_viewmodel_body(iPlayer, g_iBayonet[iPlayer]);
-	if(g_iKnifeID[iPlayer] == 3)
-		cs_set_viewmodel_body(iPlayer, g_iDagger[iPlayer]);
-	if(g_iKnifeID[iPlayer] == 4)
-		cs_set_viewmodel_body(iPlayer, g_iKatana[iPlayer]);
 
 	SetSkinKnife(iPlayer);
 
@@ -238,39 +238,34 @@ public ItemDeployPost(iWeapon)
 */
 public SetSkinUSP(id)
 {
-	new wpn = get_user_weapon(id);
-	if(wpn != CSW_USP)
-		return;
-
-	//server_print("Set model: %s", g_szUspModel);
-	set_pev(id, pev_viewmodel2, g_szUspModel);
-	set_pev(id, pev_body, g_iUsp[id]);
-	
+	SetWeaponModel(id, g_iUsp);
 }
 
 public SetSkinKnife(id)
 {
-	if(g_iKnifeID[id] >= sizeof g_szKnifeModel)
-		g_iKnifeID[id] = 0;
-
 	new wpn = get_user_weapon(id);
 	if(wpn != CSW_KNIFE)
 		return;
 
-	set_pev(id, pev_viewmodel2, g_szKnifeModel[g_iKnifeID[id]]);
-	if(g_iKnifeID[id] == 0)
-		set_pev(id, pev_body, g_iKnife[id]);
-	if(g_iKnifeID[id] == 1)
-		set_pev(id, pev_body, g_iButcher[id]);
-	if(g_iKnifeID[id] == 2)
-		set_pev(id, pev_body, g_iBayonet[id]);
-	if(g_iKnifeID[id] == 3)
-		set_pev(id, pev_body, g_iDagger[id]);
-	if(g_iKnifeID[id] == 4)
-		set_pev(id, pev_body, g_iKatana[id]);
+	switch (g_iKnifeID[id])
+	{
+		case 0: SetWeaponModel(id, g_iKnife);
+		case 1: SetWeaponModel(id, g_iButcher);
+		case 2: SetWeaponModel(id, g_iBayonet);
+		case 3: SetWeaponModel(id, g_iDagger);
+		case 4: SetWeaponModel(id, g_iKatana);
+	}
 
-	//server_print("Set model: %s", g_szKnifeModel[g_iKnifeID[id]]);
 }
+
+public SetWeaponModel(iPlayer, item[MAX_PLAYERS][eWeapon])
+{
+	cs_set_viewmodel_body(iPlayer, item[iPlayer][eSubmodel]); 
+	set_pev(iPlayer, pev_viewmodel2, item[iPlayer][eModel]); 
+	set_pev(iPlayer, pev_body, item[iPlayer][eSubmodel]);
+}
+
+
 
 public ResetModel_Hook(id, level, cid){
 	if(strlen(g_szSkin[id]) && is_user_connected(id)){
@@ -288,63 +283,53 @@ public client_putinserver(id){
 	g_iKnifeID[id] = 0;
 }
 
-public SaveSkins(id) {
-	new name[30];
-	new key[30];
-	new data[128];
-
+public LoadSkins(id) {
+	new name[32], key[64], data[128];
 	get_user_name(id, name, charsmax(name));
-	formatex(key, charsmax(key), "%s", name);
+	 
+	LoadSkin(id, name, "knife", g_iKnife);
+	LoadSkin(id, name, "butcher", g_iButcher);
+	LoadSkin(id, name, "bayonet", g_iBayonet);
+	LoadSkin(id, name, "dagger", g_iDagger);
+	LoadSkin(id, name, "katana", g_iKatana);
+	LoadSkin(id, name, "usp", g_iUsp);
 
-	// Format all integers into a single string
-	formatex(data, charsmax(data), "%d %d %d %d %d %d", 
-		g_iKnife[id], g_iButcher[id], g_iUsp[id], 
-		g_iBayonet[id], g_iDagger[id], g_iKatana[id]);
+	LoadSkin(id, name, "katana", g_iKnife);
 
-	nvault_set(g_iVault, key, data);
-
-	formatex(key, charsmax(key), "%s_player", name);
-	
-	nvault_set(g_iVault, key, g_szSkin[id]);
+	formatex(key, charsmax(key), "%s_player_model", name);
+	if (nvault_get(g_iVault, key, data, charsmax(data))) {
+		formatex(g_szSkin[id], charsmax(g_szSkin[]), "%s", data);
+	}
 }
 
-public LoadSkins(id) {
-	new name[30];
-	new key[30];
-	new data[128];
-	new temp[10];
-	new remaining[128];
+public LoadSkin(id, name[], weapon[], item[MAX_PLAYERS][eWeapon])
+{	
+	new key[64], data[64];
+
+	formatex(key, charsmax(key), "%s_%s_model", name, weapon);
+	if (nvault_get(g_iVault, key, data, charsmax(data))) {
+		formatex(item[id][eModel], charsmax(item[][eModel]), "%s", data);
+	}
+
+	// Load submodel
+	formatex(key, charsmax(key), "%s_%s_submodel", name, weapon);
+	if (nvault_get(g_iVault, key, data, charsmax(data))) {
+		item[id][eSubmodel] = str_to_num(data);
+	}
+}
+
+public SaveSkins(id, const weapon[], const model[], submodel) {
+	new name[32], key[64], data[64];
 
 	get_user_name(id, name, charsmax(name));
-	formatex(key, charsmax(key), "%s", name);
 
-	// Load the single formatted string from nvault
-	if (nvault_get(g_iVault, key, data, charsmax(data))) {
-		// Parse each integer from the loaded string using strtok
-		strtok(data, temp, charsmax(temp), remaining, charsmax(remaining), ' ');
-		g_iKnife[id] = str_to_num(temp);
+	// Save model
+	formatex(key, charsmax(key), "%s_%s_model", name, weapon);
+	nvault_set(g_iVault, key, model);
 
-		strtok(remaining, temp, charsmax(temp), data, charsmax(data), ' ');
-		g_iButcher[id] = str_to_num(temp);
-
-		strtok(data, temp, charsmax(temp), remaining, charsmax(remaining), ' ');
-		g_iUsp[id] = str_to_num(temp);
-
-		strtok(data, temp, charsmax(temp), remaining, charsmax(remaining), ' ');
-		g_iBayonet[id] = str_to_num(temp);
-
-		strtok(remaining, temp, charsmax(temp), data, charsmax(data), ' ');
-		g_iDagger[id] = str_to_num(temp);
-
-		strtok(data, temp, charsmax(temp), remaining, charsmax(remaining), ' ');
-		g_iKatana[id] = str_to_num(temp);
-	}
-
-	// Retrieve additional skin data as needed
-	formatex(key, charsmax(key), "%s_player", name);
-	nvault_get(g_iVault, key, g_szSkin[id], charsmax(g_szSkin[]));
-	if(g_szSkin[id][0])
-	{
-		cs_set_user_model(id, g_szSkin[id]);
-	}
+	if(submodel < 0 ) return;
+	// Save submodel
+	formatex(key, charsmax(key), "%s_%s_submodel", name, weapon);
+	formatex(data, charsmax(data), "%d", submodel);
+	nvault_set(g_iVault, key, data);
 }
