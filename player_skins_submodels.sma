@@ -18,6 +18,10 @@ native cs_set_viewmodel_body(iPlayer, iValue);
 native cs_get_viewmodel_body(iPlayer);
 forward change_skin(iPlayer, iEnt);
 
+native set_user_knife(id, const model[], submodel);
+native set_user_butcher(id, const model[], submodel);
+native set_user_usp(id, const model[], submodel);
+
 enum eWeapon{
 	eModel[64],
 	eSubmodel
@@ -277,6 +281,13 @@ public ResetModel_Hook(id, level, cid){
 }
 
 public client_putinserver(id){
+	formatex(g_iKnife[id][eModel], charsmax(g_iKnife[][eModel]), "models/fwo20251/v_def_free_and_vip.mdl");
+	g_iKnife[id][eSubmodel] = 0;
+	formatex(g_iButcher[id][eModel], charsmax(g_iButcher[][eModel]), "models/fwo20251/v_but_free_and_vip.mdl");
+	g_iButcher[id][eSubmodel] = 0;
+	formatex(g_iUsp[id][eModel], charsmax(g_iUsp[][eModel]), "models/fwo20251/v_usp_free_and_vip.mdl");
+	g_iUsp[id][eSubmodel] = 0;
+	
 	LoadSkins(id);
 	g_bHideKnife[id] = false;
 	g_bHideUsp[id] = false;
