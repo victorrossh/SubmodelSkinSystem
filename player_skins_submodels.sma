@@ -18,10 +18,6 @@ native cs_set_viewmodel_body(iPlayer, iValue);
 native cs_get_viewmodel_body(iPlayer);
 forward change_skin(iPlayer, iEnt);
 
-native set_user_knife(id, const model[], submodel);
-native set_user_butcher(id, const model[], submodel);
-native set_user_usp(id, const model[], submodel);
-
 enum eWeapon{
 	eModel[64],
 	eSubmodel
@@ -44,16 +40,8 @@ new g_iVault;
 
 public plugin_init()
 {
-	//RegisterHam(Ham_Item_Deploy, "weapon_knife", "ItemDeployPost", 1);
-	//RegisterHam(Ham_Item_Deploy, "weapon_usp", "ItemDeployPost", 1);
-
 	register_event("ResetHUD", "ResetModel_Hook", "b");
-	register_event("CurWeapon", "CurWeapon_Hook", "be");
-	
-	register_forward(FM_SetClientKeyValue, "Forward_SetClientKeyValue");
-	register_forward(FM_SetModel, "Forward_SetModel");
-	register_forward(FM_PlayerPostThink, "Forward_PlayerPostThink");
-	
+
 	RegisterHam(Ham_Spawn, "player", "Player_Spawn", 1);
 
 	g_iVault = nvault_open("player_skins5");
@@ -212,47 +200,6 @@ public change_skin(iPlayer, iEnt)
 	return HAM_IGNORED;
 }
 
-/*
-public ItemDeployPost(iWeapon)
-{	
-	static id;
-	id = get_pdata_cbase(iWeapon, m_pPlayer, XO_WEAPON);
-
-	new iWpn = WEAPON_ENT(iWeapon);
-
-	if(!is_user_alive(id)) return HAM_IGNORED;
-		
-	if(iWpn != CSW_USP && iWpn != CSW_KNIFE) return HAM_IGNORED;
-		
-	if(iWpn == CSW_USP && g_bHideUsp[id]) return HAM_IGNORED;
-
-	if(iWpn == CSW_KNIFE && g_bHideKnife[id]) return HAM_IGNORED;
-	
-	if(iWpn == CSW_USP)
-	{
-		cs_set_viewmodel_body(id, g_iUsp[id]);
-
-		set_task(0.01, "SetSkinUSP", id);
-
-		return HAM_IGNORED;
-	}
-
-	if(g_iKnifeID[id] == 0)
-		cs_set_viewmodel_body(id, g_iKnife[id]);
-	if(g_iKnifeID[id] == 1)
-		cs_set_viewmodel_body(id, g_iButcher[id]);
-	if(g_iKnifeID[id] == 2)
-		cs_set_viewmodel_body(id, g_iBayonet[id]);
-	if(g_iKnifeID[id] == 3)
-		cs_set_viewmodel_body(id, g_iDagger[id]);
-	if(g_iKnifeID[id] == 4)
-		cs_set_viewmodel_body(id, g_iKatana[id]);
-
-	set_task(0.01, "SetSkinKnife", id);
-
-	return HAM_IGNORED;
-}
-*/
 public SetSkinUSP(id)
 {
 	SetWeaponModel(id, g_iUsp);
@@ -285,9 +232,12 @@ public SetWeaponModel(iPlayer, item[MAX_PLAYERS][eWeapon])
 
 
 public ResetModel_Hook(id, level, cid){
+	client_print(id, print_chat, "RESETMODEL");
 	if(strlen(g_iPlayer[id][eModel]) && is_user_connected(id)){
+		client_print(id, print_chat, "SET MODEL");
 		cs_set_user_model(id, g_iPlayer[id][eModel]);
 		if (g_iPlayer[id][eSubmodel] >= 0 && is_user_alive(id)) {
+			client_print(id, print_chat, "SET SUBMODEL");
 			set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
 		}
 		return PLUGIN_HANDLED;
@@ -366,51 +316,10 @@ public SaveSkins(id, const weapon[], const model[], submodel) {
 	nvault_set(g_iVault, key, data);
 }
 
-public Forward_SetClientKeyValue(id, const infobuffer[], const key[], const value[]) {
-	if (equal(key, "model") && strlen(g_iPlayer[id][eModel]) > 0) {
-		if (!equal(value, g_iPlayer[id][eModel])) {
-			set_user_info(id, "model", g_iPlayer[id][eModel]);	
-			if (is_user_alive(id) && g_iPlayer[id][eSubmodel] >= 0) {
-				set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
-			}
-			return FMRES_SUPERCEDE;
-		}
-	}
-	return FMRES_IGNORED;
-}
-
-public Forward_SetModel(entity, const model[]) {
-	if (is_user_connected(entity) && is_user_alive(entity)) {
-		if (strlen(g_iPlayer[entity][eModel]) > 0 && g_iPlayer[entity][eSubmodel] >= 0) {
-			set_pev(entity, pev_body, g_iPlayer[entity][eSubmodel]);
-		}
-	}
-	return FMRES_IGNORED;
-}
-
 public Player_Spawn(id) {
 	if (is_user_alive(id) && strlen(g_iPlayer[id][eModel]) && g_iPlayer[id][eSubmodel] >= 0) {
 		cs_set_user_model(id, g_iPlayer[id][eModel]);
 		set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
 	}
 	return HAM_IGNORED;
-}
-
-public Forward_PlayerPostThink(id) {
-	if (is_user_alive(id) && strlen(g_iPlayer[id][eModel]) && g_iPlayer[id][eSubmodel] >= 0) {
-		static current_body;
-		pev(id, pev_body, current_body);
-		
-		if (current_body != g_iPlayer[id][eSubmodel]) {
-			set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
-		}
-	}
-	return FMRES_IGNORED;
-}
-
-public CurWeapon_Hook(id) {
-	if (is_user_alive(id) && strlen(g_iPlayer[id][eModel]) && g_iPlayer[id][eSubmodel] >= 0) {
-		set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
-	}
-	return PLUGIN_CONTINUE;
 }
