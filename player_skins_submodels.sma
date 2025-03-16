@@ -35,8 +35,7 @@ new g_iBayonet[MAX_PLAYERS][eWeapon];
 new g_iDagger[MAX_PLAYERS][eWeapon];
 new g_iKatana[MAX_PLAYERS][eWeapon];
 new g_iUsp[MAX_PLAYERS][eWeapon];
-new g_szSkin[MAX_PLAYERS][64];
-new g_iPlayerSubmodel[MAX_PLAYERS];
+new g_iPlayer[MAX_PLAYERS][eWeapon]
 
 new bool:g_bHideKnife[MAX_PLAYERS];
 new bool:g_bHideUsp[MAX_PLAYERS];
@@ -170,10 +169,10 @@ public set_user_player_skin_native(numParams)
 	get_string(2, model, charsmax(model));
 	new submodel = get_param(3);
 
-	format(g_szSkin[id], charsmax(g_szSkin[]), model);
-	g_iPlayerSubmodel[id] = submodel;
+	format(g_iPlayer[id][eModel], charsmax(g_iPlayer[][eModel]), model);
+	g_iPlayer[id][eSubmodel] = submodel;
 	SaveSkins(id, "player", model, submodel);
-	cs_set_user_model(id, g_szSkin[id]);
+	cs_set_user_model(id, model);
 	
 	if (submodel >= 0 && is_user_alive(id)) {
 		set_pev(id, pev_body, submodel);
@@ -286,10 +285,10 @@ public SetWeaponModel(iPlayer, item[MAX_PLAYERS][eWeapon])
 
 
 public ResetModel_Hook(id, level, cid){
-	if(strlen(g_szSkin[id]) && is_user_connected(id)){
-		cs_set_user_model(id, g_szSkin[id]);
-		if (g_iPlayerSubmodel[id] >= 0 && is_user_alive(id)) {
-			set_pev(id, pev_body, g_iPlayerSubmodel[id]);
+	if(strlen(g_iPlayer[id][eModel]) && is_user_connected(id)){
+		cs_set_user_model(id, g_iPlayer[id][eModel]);
+		if (g_iPlayer[id][eSubmodel] >= 0 && is_user_alive(id)) {
+			set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
 		}
 		return PLUGIN_HANDLED;
 	}
@@ -304,25 +303,25 @@ public client_putinserver(id){
 	g_iButcher[id][eSubmodel] = 0;
 	formatex(g_iUsp[id][eModel], charsmax(g_iUsp[][eModel]), "models/fwo20251/v_usp_free_and_vip.mdl");
 	g_iUsp[id][eSubmodel] = 0;
+	formatex(g_iPlayer[id][eModel], charsmax(g_iPlayer[][eModel]), "");
+	g_iPlayer[id][eSubmodel] = 0;
 	
 	g_bHideKnife[id] = false;
 	g_bHideUsp[id] = false;
 	g_iKnifeID[id] = 0;
-	g_szSkin[id][0] = 0;
-	g_iPlayerSubmodel[id] = -1;
 
 	LoadSkins(id);
 
-	if (strlen(g_szSkin[id])) {
-		cs_set_user_model(id, g_szSkin[id]);
-		if (g_iPlayerSubmodel[id] >= 0 && is_user_alive(id)) {
-			set_pev(id, pev_body, g_iPlayerSubmodel[id]);
+	if (strlen(g_iPlayer[id][eModel])) {
+		cs_set_user_model(id, g_iPlayer[id][eModel]);
+		if (g_iPlayer[id][eSubmodel] >= 0 && is_user_alive(id)) {
+			set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
 		}
 	}
 }
 
 public LoadSkins(id) {
-	new name[32], key[64], data[128];
+	new name[32];
 	get_user_name(id, name, charsmax(name));
 	 
 	LoadSkin(id, name, "knife", g_iKnife);
@@ -332,16 +331,7 @@ public LoadSkins(id) {
 	LoadSkin(id, name, "katana", g_iKatana);
 	LoadSkin(id, name, "usp", g_iUsp);
 
-	LoadSkin(id, name, "katana", g_iKnife);
-
-	formatex(key, charsmax(key), "%s_player_model", name);
-	if (nvault_get(g_iVault, key, data, charsmax(data))) {
-		formatex(g_szSkin[id], charsmax(g_szSkin[]), "%s", data);
-	}
-	formatex(key, charsmax(key), "%s_player_submodel", name);
-	if (nvault_get(g_iVault, key, data, charsmax(data))) {
-		g_iPlayerSubmodel[id] = str_to_num(data);
-	}
+	LoadSkin(id, name, "player", g_iPlayer);
 }
 
 public LoadSkin(id, name[], weapon[], item[MAX_PLAYERS][eWeapon])
@@ -377,11 +367,11 @@ public SaveSkins(id, const weapon[], const model[], submodel) {
 }
 
 public Forward_SetClientKeyValue(id, const infobuffer[], const key[], const value[]) {
-	if (equal(key, "model") && strlen(g_szSkin[id]) > 0) {
-		if (!equal(value, g_szSkin[id])) {
-			set_user_info(id, "model", g_szSkin[id]);	
-			if (is_user_alive(id) && g_iPlayerSubmodel[id] >= 0) {
-				set_pev(id, pev_body, g_iPlayerSubmodel[id]);
+	if (equal(key, "model") && strlen(g_iPlayer[id][eModel]) > 0) {
+		if (!equal(value, g_iPlayer[id][eModel])) {
+			set_user_info(id, "model", g_iPlayer[id][eModel]);	
+			if (is_user_alive(id) && g_iPlayer[id][eSubmodel] >= 0) {
+				set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
 			}
 			return FMRES_SUPERCEDE;
 		}
@@ -391,36 +381,36 @@ public Forward_SetClientKeyValue(id, const infobuffer[], const key[], const valu
 
 public Forward_SetModel(entity, const model[]) {
 	if (is_user_connected(entity) && is_user_alive(entity)) {
-		if (strlen(g_szSkin[entity]) > 0 && g_iPlayerSubmodel[entity] >= 0) {
-			set_pev(entity, pev_body, g_iPlayerSubmodel[entity]);
+		if (strlen(g_iPlayer[entity][eModel]) > 0 && g_iPlayer[entity][eSubmodel] >= 0) {
+			set_pev(entity, pev_body, g_iPlayer[entity][eSubmodel]);
 		}
 	}
 	return FMRES_IGNORED;
 }
 
 public Player_Spawn(id) {
-	if (is_user_alive(id) && strlen(g_szSkin[id]) && g_iPlayerSubmodel[id] >= 0) {
-		cs_set_user_model(id, g_szSkin[id]);
-		set_pev(id, pev_body, g_iPlayerSubmodel[id]);
+	if (is_user_alive(id) && strlen(g_iPlayer[id][eModel]) && g_iPlayer[id][eSubmodel] >= 0) {
+		cs_set_user_model(id, g_iPlayer[id][eModel]);
+		set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
 	}
 	return HAM_IGNORED;
 }
 
 public Forward_PlayerPostThink(id) {
-	if (is_user_alive(id) && strlen(g_szSkin[id]) && g_iPlayerSubmodel[id] >= 0) {
+	if (is_user_alive(id) && strlen(g_iPlayer[id][eModel]) && g_iPlayer[id][eSubmodel] >= 0) {
 		static current_body;
 		pev(id, pev_body, current_body);
 		
-		if (current_body != g_iPlayerSubmodel[id]) {
-			set_pev(id, pev_body, g_iPlayerSubmodel[id]);
+		if (current_body != g_iPlayer[id][eSubmodel]) {
+			set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
 		}
 	}
 	return FMRES_IGNORED;
 }
 
 public CurWeapon_Hook(id) {
-	if (is_user_alive(id) && strlen(g_szSkin[id]) && g_iPlayerSubmodel[id] >= 0) {
-		set_pev(id, pev_body, g_iPlayerSubmodel[id]);
+	if (is_user_alive(id) && strlen(g_iPlayer[id][eModel]) && g_iPlayer[id][eSubmodel] >= 0) {
+		set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
 	}
 	return PLUGIN_CONTINUE;
 }
