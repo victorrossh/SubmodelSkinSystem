@@ -226,18 +226,14 @@ public SetWeaponModel(iPlayer, item[MAX_PLAYERS][eWeapon])
 {
 	cs_set_viewmodel_body(iPlayer, item[iPlayer][eSubmodel]); 
 	set_pev(iPlayer, pev_viewmodel2, item[iPlayer][eModel]); 
-	set_pev(iPlayer, pev_body, item[iPlayer][eSubmodel]);
 }
-
 
 
 public ResetModel_Hook(id, level, cid){
 	client_print(id, print_chat, "RESETMODEL");
-	if(strlen(g_iPlayer[id][eModel]) && is_user_connected(id)){
-		client_print(id, print_chat, "SET MODEL");
+	if(strlen(g_iPlayer[id][eModel]) && is_user_alive(id)){
 		cs_set_user_model(id, g_iPlayer[id][eModel]);
-		if (g_iPlayer[id][eSubmodel] >= 0 && is_user_alive(id)) {
-			client_print(id, print_chat, "SET SUBMODEL");
+		if (g_iPlayer[id][eSubmodel] >= 0) {
 			set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
 		}
 		return PLUGIN_HANDLED;
