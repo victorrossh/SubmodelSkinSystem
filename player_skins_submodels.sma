@@ -230,7 +230,6 @@ public SetWeaponModel(iPlayer, item[MAX_PLAYERS][eWeapon])
 
 
 public ResetModel_Hook(id, level, cid){
-	client_print(id, print_chat, "RESETMODEL");
 	if(strlen(g_iPlayer[id][eModel]) && is_user_alive(id)){
 		cs_set_user_model(id, g_iPlayer[id][eModel]);
 		if (g_iPlayer[id][eSubmodel] >= 0) {
