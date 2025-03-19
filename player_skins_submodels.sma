@@ -44,7 +44,7 @@ public plugin_init()
 
 	RegisterHam(Ham_Spawn, "player", "Player_Spawn", 1);
 
-	g_iVault = nvault_open("player_skins5");
+	g_iVault = nvault_open("player_skins6");
 }
 
 
@@ -242,11 +242,11 @@ public ResetModel_Hook(id, level, cid){
 }
 
 public client_putinserver(id){
-	formatex(g_iKnife[id][eModel], charsmax(g_iKnife[][eModel]), "models/fwo20251/v_def_free_and_vip.mdl");
+	formatex(g_iKnife[id][eModel], charsmax(g_iKnife[][eModel]), "models/llg2025/v_def_knife.mdl");
 	g_iKnife[id][eSubmodel] = 0;
-	formatex(g_iButcher[id][eModel], charsmax(g_iButcher[][eModel]), "models/fwo20251/v_but_free_and_vip.mdl");
+	formatex(g_iButcher[id][eModel], charsmax(g_iButcher[][eModel]), "models/llg2025/v_but_knife.mdl");
 	g_iButcher[id][eSubmodel] = 0;
-	formatex(g_iUsp[id][eModel], charsmax(g_iUsp[][eModel]), "models/fwo20251/v_usp_free_and_vip.mdl");
+	formatex(g_iUsp[id][eModel], charsmax(g_iUsp[][eModel]), "models/llg2025/v_usp.mdl");
 	g_iUsp[id][eSubmodel] = 0;
 	formatex(g_iPlayer[id][eModel], charsmax(g_iPlayer[][eModel]), "");
 	g_iPlayer[id][eSubmodel] = 0;
