@@ -248,6 +248,12 @@ public client_putinserver(id){
 	g_iButcher[id][eSubmodel] = 0;
 	formatex(g_iUsp[id][eModel], charsmax(g_iUsp[][eModel]), "models/llg2025/v_usp.mdl");
 	g_iUsp[id][eSubmodel] = 0;
+	formatex(g_iKatana[id][eModel], charsmax(g_iKatana[][eModel]), "models/llg2025/v_katana.mdl");
+	g_iKatana[id][eSubmodel] = 0;
+	formatex(g_iDagger[id][eModel], charsmax(g_iDagger[][eModel]), "models/llg2025/v_premium.mdl");
+	g_iDagger[id][eSubmodel] = 0;
+	formatex(g_iBayonet[id][eModel], charsmax(g_iBayonet[][eModel]), "models/llg2025/v_vip.mdl");
+	g_iBayonet[id][eSubmodel] = 0;
 	formatex(g_iPlayer[id][eModel], charsmax(g_iPlayer[][eModel]), "");
 	g_iPlayer[id][eSubmodel] = 0;
 	
