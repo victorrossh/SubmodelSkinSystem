@@ -44,7 +44,7 @@ public plugin_init()
 
 	RegisterHam(Ham_Spawn, "player", "Player_Spawn", 1);
 
-	g_iVault = nvault_open("player_skins5");
+	g_iVault = nvault_open("player_skins6");
 }
 
 
@@ -230,7 +230,6 @@ public SetWeaponModel(iPlayer, item[MAX_PLAYERS][eWeapon])
 
 
 public ResetModel_Hook(id, level, cid){
-	client_print(id, print_chat, "RESETMODEL");
 	if(strlen(g_iPlayer[id][eModel]) && is_user_alive(id)){
 		cs_set_user_model(id, g_iPlayer[id][eModel]);
 		if (g_iPlayer[id][eSubmodel] >= 0) {
@@ -243,12 +242,18 @@ public ResetModel_Hook(id, level, cid){
 }
 
 public client_putinserver(id){
-	formatex(g_iKnife[id][eModel], charsmax(g_iKnife[][eModel]), "models/fwo20251/v_def_free_and_vip.mdl");
+	formatex(g_iKnife[id][eModel], charsmax(g_iKnife[][eModel]), "models/llg2025/v_def_knife.mdl");
 	g_iKnife[id][eSubmodel] = 0;
-	formatex(g_iButcher[id][eModel], charsmax(g_iButcher[][eModel]), "models/fwo20251/v_but_free_and_vip.mdl");
+	formatex(g_iButcher[id][eModel], charsmax(g_iButcher[][eModel]), "models/llg2025/v_but_knife.mdl");
 	g_iButcher[id][eSubmodel] = 0;
-	formatex(g_iUsp[id][eModel], charsmax(g_iUsp[][eModel]), "models/fwo20251/v_usp_free_and_vip.mdl");
+	formatex(g_iUsp[id][eModel], charsmax(g_iUsp[][eModel]), "models/llg2025/v_usp.mdl");
 	g_iUsp[id][eSubmodel] = 0;
+	formatex(g_iKatana[id][eModel], charsmax(g_iKatana[][eModel]), "models/llg2025/v_katana.mdl");
+	g_iKatana[id][eSubmodel] = 0;
+	formatex(g_iDagger[id][eModel], charsmax(g_iDagger[][eModel]), "models/llg2025/v_premium.mdl");
+	g_iDagger[id][eSubmodel] = 0;
+	formatex(g_iBayonet[id][eModel], charsmax(g_iBayonet[][eModel]), "models/llg2025/v_vip.mdl");
+	g_iBayonet[id][eSubmodel] = 0;
 	formatex(g_iPlayer[id][eModel], charsmax(g_iPlayer[][eModel]), "");
 	g_iPlayer[id][eSubmodel] = 0;
 	
