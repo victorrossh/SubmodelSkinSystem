@@ -322,5 +322,13 @@ public Player_Spawn(id) {
 		cs_set_user_model(id, g_iPlayer[id][eModel]);
 		set_pev(id, pev_body, g_iPlayer[id][eSubmodel]);
 	}
+	// Checks if it's a knife the player is holding and reapplies the skin
+	if (get_user_weapon(id) == CSW_KNIFE && !g_bHideKnife[id]) {
+		SetSkinKnife(id);
+	}
+	// Checks if it's a USP the player is holding and reapplies the skin
+	if (get_user_weapon(id) == CSW_USP && !g_bHideUsp[id]) {
+		SetSkinUSP(id);
+	}
 	return HAM_IGNORED;
 }
