@@ -246,12 +246,20 @@ public HamF_CS_Weapon_SendWeaponAnim_Post(iEnt, iAnim, Skiplocal)
 
 public HamF_Weapon_PrimaryAttack(iEnt)
 {
+	log_amx("HamF_Weapon_PrimaryAttack: iEnt=%d", iEnt);
+	
 	switch(WEAPON_ENT(iEnt))
 	{
 		case CSW_C4, CSW_HEGRENADE, CSW_FLASHBANG, CSW_SMOKEGRENADE:
+		{
+			log_amx("HamF_Weapon_PrimaryAttack: Ignored non-shooting weapon - iEnt=%d", iEnt);
 			return HAM_IGNORED;
-			
-		default: PrimaryAttackEmulation(iEnt);
+		}
+		default: 
+		{
+			log_amx("HamF_Weapon_PrimaryAttack: Calling PrimaryAttackEmulation - iEnt=%d", iEnt);
+			PrimaryAttackEmulation(iEnt);
+		}
 	}
 	
 	return HAM_IGNORED;
@@ -259,18 +267,37 @@ public HamF_Weapon_PrimaryAttack(iEnt)
 
 public HamF_TraceAttack_Post(iEnt, iAttacker, Float:damage, Float:fDir[3], ptr/*, iDamageType*/)
 {
+	log_amx("HamF_TraceAttack_Post: Start - iEnt=%d, iAttacker=%d", iEnt, iAttacker);
+	
+	if (iAttacker < 1 || iAttacker > MAXPLAYERS)
+		return HAM_IGNORED;
+	
 	static iWeapon, Float:vecEnd[3];	
 	iWeapon = get_pdata_cbase(iAttacker, m_pActiveItem, XO_PLAYER);
-
+	
+	if(!pev_valid(iWeapon)) 
+	{
+		log_amx("HamF_TraceAttack_Post: Invalid iWeapon=%d, iAttacker=%d", iWeapon, iAttacker);
+		return HAM_IGNORED;
+	}
+	
+	log_amx("HamF_TraceAttack_Post: Processing - iEnt=%d, iAttacker=%d, weapon=%d", 
+			iEnt, iAttacker, WEAPON_ENT(iWeapon));
+	
 	switch(WEAPON_ENT(iWeapon))
 	{
 		case CSW_KNIFE: 
+		{
+			log_amx("HamF_TraceAttack_Post: Knife ignored - iEnt=%d, iAttacker=%d", iEnt, iAttacker);
 			return HAM_IGNORED;
-			
+		}
 		default:
 		{
+			log_amx("HamF_TraceAttack_Post: Getting trace pos - ptr=%d", ptr);
 			get_tr2(ptr, TR_vecEndPos, vecEnd);
 	
+			log_amx("HamF_TraceAttack_Post: Creating decal - iEnt=%d, pos=(%f, %f, %f)", 
+					iEnt, vecEnd[0], vecEnd[1], vecEnd[2]);
 			// Decal effects, add here spark, any
 			engfunc(EngFunc_MessageBegin, MSG_PAS, SVC_TEMPENTITY, vecEnd, 0);
 			write_byte(TE_GUNSHOTDECAL);
@@ -283,6 +310,7 @@ public HamF_TraceAttack_Post(iEnt, iAttacker, Float:damage, Float:fDir[3], ptr/*
 		}
 	}
 	
+	log_amx("HamF_TraceAttack_Post: Finished - iEnt=%d, iAttacker=%d", iEnt, iAttacker);
 	return HAM_IGNORED;	
 }
 
@@ -514,10 +542,12 @@ GetWeaponDrawAnim(iEntity)
 //Emulation, not attack replace
 PrimaryAttackEmulation(iEnt)
 {
+	log_amx("PrimaryAttackEmulation: iEnt=%d, weapon=%d", iEnt, WEAPON_ENT(iEnt));
+	
 	switch(WEAPON_ENT(iEnt))
 	{		
 		//Func description: WeaponShootInfo(iWeapon, iAnim, const szSoundEmpty[], const szSoundFire[], iAutoShoot, iWeaponType)
-		
+
 		case CSW_GLOCK18: WeaponShootInfo(iEnt, GLOCK18_SHOOT3, DRYFIRE_PISTOL, GLOCK18_SHOOT_SOUND, FALSE, WEAPONTYPE_GLOCK18);
 		case CSW_AK47: WeaponShootInfo(iEnt, AK47_SHOOT1, DRYFIRE_RIFLE, AK47_SHOOT_SOUND, TRUE, WEAPONTYPE_OTHER);
 		case CSW_AUG: WeaponShootInfo(iEnt, AUG_SHOOT1, DRYFIRE_RIFLE, AUG_SHOOT_SOUND, TRUE, WEAPONTYPE_OTHER);
@@ -544,38 +574,50 @@ PrimaryAttackEmulation(iEnt)
 		case CSW_USP: WeaponShootInfo(iEnt, USP_UNSIL_SHOOT3, DRYFIRE_PISTOL, USP_SHOOT_SOUND, FALSE, WEAPONTYPE_USP);	
 	}
 	
+	log_amx("PrimaryAttackEmulation: Finished - iEnt=%d", iEnt);
 	return HAM_IGNORED;
 }
 
 //Set here anims, sounds
 WeaponShootInfo(iEnt, iAnim, const szSoundEmpty[], const szSoundFire[], iAutoShoot, iWeaponType)
 {
-	static iPlayer, iClip; 
+	log_amx("WeaponShootInfo: Start - iEnt=%d, iAnim=%d, weaponType=%d", iEnt, iAnim, iWeaponType);
 	
+	static iPlayer, iClip; 
 	iPlayer = get_pdata_cbase(iEnt, m_pPlayer, XO_WEAPON);	 
+	if(!pev_valid(iPlayer)) 
+	{
+		log_amx("WeaponShootInfo: Invalid iPlayer=%d, iEnt=%d", iPlayer, iEnt);
+		return HAM_SUPERCEDE;
+	}
+	
 	iClip = get_pdata_int(iEnt, m_iClip, XO_WEAPON);	
 	
 	if(!iClip) 
 	{	
+		log_amx("WeaponShootInfo: No ammo - iPlayer=%d, iEnt=%d", iPlayer, iEnt);
 		emit_sound(iPlayer, CHAN_AUTO, szSoundEmpty, 0.8, ATTN_NORM, 0, PITCH_NORM);
-		
 		set_pdata_float(iEnt, m_flNextPrimaryAttack, 0.2, XO_WEAPON);	//m_flNextPrimaryAttack = GetNextAttackDelay(0.2);
-		
 		return HAM_SUPERCEDE;		
 	}
 	
 	if(get_pdata_int(iEnt, m_iShotsFired, XO_WEAPON) && !iAutoShoot)
+	{
+		log_amx("WeaponShootInfo: Shots fired, not auto - iPlayer=%d, iEnt=%d", iPlayer, iEnt);
 		return HAM_SUPERCEDE;
+	}
 	
 	switch(iWeaponType)
 	{
 		case WEAPONTYPE_ELITE:
 		{
+			log_amx("WeaponShootInfo: Elite - iPlayer=%d, iEnt=%d", iPlayer, iEnt);
 			if(get_pdata_int(iEnt, m_iWeaponState, XO_WEAPON) & WPNSTATE_ELITE_LEFT)
 				PlayWeaponState(iPlayer, ELITE_SHOOT_SOUND, ELITE_SHOOTLEFT5);
 		}	
 		case WEAPONTYPE_GLOCK18:
 		{
+			log_amx("WeaponShootInfo: Glock18 - iPlayer=%d, iEnt=%d", iPlayer, iEnt);
 			if(get_pdata_int(iEnt, m_iWeaponState, XO_WEAPON) & WPNSTATE_GLOCK18_BURST_MODE)
 				PlayWeaponState(iPlayer, GLOCK18_BURST_SOUND, GLOCK18_SHOOT2);
 			else if(HasUserShield(iPlayer))
@@ -584,20 +626,25 @@ WeaponShootInfo(iEnt, iAnim, const szSoundEmpty[], const szSoundFire[], iAutoSho
 				EjectBrass(iPlayer, iEnt);
 				return HAM_IGNORED
 			}
-		
 		}
 		case WEAPONTYPE_FAMAS:
 		{
+			log_amx("WeaponShootInfo: FAMAS - iPlayer=%d, iEnt=%d", iPlayer, iEnt);
 			if(get_pdata_int(iEnt, m_iWeaponState, XO_WEAPON) & WPNSTATE_FAMAS_BURST_MODE)
 				PlayWeaponState(iPlayer, CLARION_BURST_SOUND, CLARION_SHOOT2);	
 		}
 		case WEAPONTYPE_M4A1:
 		{
+			log_amx("WeaponShootInfo: M4A1 - iPlayer=%d, iEnt=%d", iPlayer, iEnt);
 			if(get_pdata_int(iEnt, m_iWeaponState, XO_WEAPON) & WPNSTATE_M4A1_SILENCED)
 				PlayWeaponState(iPlayer, M4A1_SILENT_SOUND, M4A1_SHOOT3);	
 		}
 		case WEAPONTYPE_USP:
 		{
+			log_amx("WeaponShootInfo: USP - iPlayer=%d, iEnt=%d, silenced=%d, shield=%d", 
+					iPlayer, iEnt, 
+					(get_pdata_int(iEnt, m_iWeaponState, XO_WEAPON) & WPNSTATE_USP_SILENCED) ? 1 : 0, 
+					HasUserShield(iPlayer) ? 1 : 0);
 			if(get_pdata_int(iEnt, m_iWeaponState, XO_WEAPON) & WPNSTATE_USP_SILENCED)
 				PlayWeaponState(iPlayer, USP_SILENT_SOUND, USP_SHOOT3);	
 			else if(HasUserShield(iPlayer))
@@ -611,19 +658,32 @@ WeaponShootInfo(iEnt, iAnim, const szSoundEmpty[], const szSoundFire[], iAutoSho
 
 	//Second mode disabled or weapontype other
 	if(!(get_pdata_int(iEnt, m_iWeaponState, XO_WEAPON)))
+	{
+		log_amx("WeaponShootInfo: Default mode - iPlayer=%d, iEnt=%d, sound=%s", 
+				iPlayer, iEnt, szSoundFire);
 		PlayWeaponState(iPlayer, szSoundFire, iAnim);	
+	}
 	
+	log_amx("WeaponShootInfo: Calling EjectBrass - iPlayer=%d, iEnt=%d", iPlayer, iEnt);
 	EjectBrass(iPlayer, iEnt);
 	
+	log_amx("WeaponShootInfo: Finished - iEnt=%d", iEnt);
 	return HAM_IGNORED;	
 }
 
 //Play shoot anim and emit fire sounds
 PlayWeaponState(iPlayer, const szShootSound[], iWeaponAnim)
 {
+	log_amx("PlayWeaponState: Start - iPlayer=%d, sound=%s, anim=%d", 
+			iPlayer, szShootSound, iWeaponAnim);
+	
 	emit_sound(iPlayer, CHAN_WEAPON, szShootSound, VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
-			
+	
+	log_amx("PlayWeaponState: Calling SendWeaponAnim - iPlayer=%d, anim=%d, body=%d", 
+			iPlayer, iWeaponAnim, iBodyIndex[iPlayer]);
 	SendWeaponAnim(iPlayer, iWeaponAnim, iBodyIndex[iPlayer])	
+	
+	log_amx("PlayWeaponState: Finished - iPlayer=%d", iPlayer);
 }
 
 //Animation const (include Spectators check) by fl0wer
@@ -662,25 +722,53 @@ SendWeaponAnim(iPlayer, iAnim, iBody)
 //Shells, i've searched the client burst shell ejection, but the function does same effect, so let it be
 EjectBrass(iPlayer, iEnt)
 {
+	log_amx("EjectBrass: Start - iPlayer=%d, iEnt=%d, weapon=%d", 
+			iPlayer, iEnt, WEAPON_ENT(iEnt));
+	
+	if(!pev_valid(iPlayer) || !pev_valid(iEnt)) 
+	{
+		log_amx("EjectBrass: Invalid iPlayer=%d or iEnt=%d", iPlayer, iEnt);
+		return;
+	}
+	
 	static iShellRifle, iShellShotgun;
 	
 	if(!iShellRifle || !iShellShotgun)
 	{
+		log_amx("EjectBrass: Precaching shells");
 		iShellRifle = engfunc(EngFunc_PrecacheModel, SHELL_MODEL);
 		iShellShotgun = engfunc(EngFunc_PrecacheModel, SHOTGUN_SHELL_MODEL);
 	}	
 	
 	switch(WEAPON_ENT(iEnt))
 	{
-		case CSW_M3, CSW_XM1014: set_pdata_int(iEnt, m_iShellId, iShellShotgun, XO_WEAPON);
-		case CSW_ELITE: return;	//Dual Weapon client part side, should do with message, let skip this currently	
-		default: set_pdata_int(iEnt, m_iShellId, iShellRifle, XO_WEAPON);	
+		case CSW_M3, CSW_XM1014: 
+		{
+			log_amx("EjectBrass: Setting shotgun shell - iEnt=%d", iEnt);
+			set_pdata_int(iEnt, m_iShellId, iShellShotgun, XO_WEAPON);
+		}
+		case CSW_ELITE: 
+		{
+			log_amx("EjectBrass: Skipping elite - iEnt=%d", iEnt);
+			return; //Dual Weapon client part side, should do with message, let skip this currently	
+		}
+		default: 
+		{
+			log_amx("EjectBrass: Setting rifle shell - iEnt=%d", iEnt);
+			set_pdata_int(iEnt, m_iShellId, iShellRifle, XO_WEAPON);
+		}
 	}
 	
 	if(get_pdata_int(iEnt, m_iWeaponState, XO_WEAPON) & WPNSTATE_FAMAS_BURST_MODE || get_pdata_int(iEnt, m_iWeaponState, XO_WEAPON) & WPNSTATE_GLOCK18_BURST_MODE)
+	{
+		log_amx("EjectBrass: Scheduling additional burst shell - iPlayer=%d", iPlayer);
 		set_task(0.1, "EjectAdditionalBurstShell", iPlayer)	//Temporarly, but don't need to create entity through amxx
+	}
 	
+	log_amx("EjectBrass: Setting eject brass time - iPlayer=%d", iPlayer);
 	set_pdata_float(iPlayer, m_flEjectBrass, get_gametime(), XO_PLAYER);	
+	
+	log_amx("EjectBrass: Finished - iPlayer=%d, iEnt=%d", iPlayer, iEnt);
 }
 
 
