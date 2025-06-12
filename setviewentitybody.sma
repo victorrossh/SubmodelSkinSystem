@@ -222,7 +222,7 @@ public HamF_Item_Deploy_Post(iEnt)
 	static iPlayer;	
 	//iPlayer = get_pdata_cbase(iEnt, m_pPlayer, XO_WEAPON);
 	iPlayer = get_member(iEnt, m_pPlayer);	//CBasePlayerItem::m_pPlayer
-	if(!is_user_connected(iPlayer))
+	if(!is_user_alive(iPlayer))
 	{
 		if(g_bDebugMode)
 			log_amx("HamF_Item_Deploy_Post: Invalid iPlayer=%d, iEnt=%d", iPlayer, iEnt);
@@ -258,13 +258,12 @@ public weapondeploy_think(ent)
 	}
 }
 
-
 public HamF_CS_Weapon_SendWeaponAnim_Post(iEnt, iAnim, Skiplocal)
 {
 	static iPlayer;
 	//iPlayer = get_pdata_cbase(iEnt, m_pPlayer, XO_WEAPON);
 	iPlayer = get_member(iEnt, m_pPlayer);	//CBasePlayerItem::m_pPlayer
-	if(!is_user_connected(iPlayer))
+	if(!is_user_alive(iPlayer))
 	{
 		if(g_bDebugMode)
 			log_amx("HamF_CS_Weapon_SendWeaponAnim_Post: Invalid iPlayer=%d, iEnt=%d", iPlayer, iEnt);
